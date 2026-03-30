@@ -1,0 +1,266 @@
+<div class="admin-container">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="header-left">
+      <span class="cricket-icon">🏏</span>
+      <div>
+        <h1>Cricket Admin Panel</h1>
+        <p>Manage matches and update scores</p>
+      </div>
+    </div>
+    <!-- <a href="/user" class="view-live-btn">📺 View Live</a> -->
+     <div class="header-right">
+  <span class="admin-name">👤 {{ getAdminName() }}</span>
+  <a href="/user" class="view-live-btn">📺 View Live</a>
+  <button class="logout-btn" (click)="logout()">🚪 Logout</button>
+</div>
+  </div>
+
+  <!-- Message Toast -->
+  <div class="toast" *ngIf="message" [class]="messageType">
+    {{ message }}
+  </div>
+
+  <div class="admin-grid">
+
+    <!-- Left Column -->
+    <div class="left-col">
+
+      <!-- Create Match -->
+      <div class="card">
+        <div class="card-header">
+          <h2>➕ Create New Match</h2>
+        </div>
+        <div class="card-body">
+          <input [(ngModel)]="newMatch.team1" placeholder="🏏 Team 1 (e.g. India)" />
+          <input [(ngModel)]="newMatch.team2" placeholder="🏏 Team 2 (e.g. Australia)" />
+          <input [(ngModel)]="newMatch.venue" placeholder="📍 Venue" />
+          <button class="btn-primary" (click)="createMatch()" [disabled]="loading">
+            {{ loading ? 'Creating...' : '➕ Create Match' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Match List -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📋 Matches</h2>
+          <span class="badge-count">{{ matches.length }}</span>
+        </div>
+        <div class="card-body">
+          <div
+            class="match-item"
+            *ngFor="let match of matches"
+            [class.selected]="selectedMatch?.id === match.id"
+            (click)="selectMatch(match)">
+            <div class="match-item-top">
+              <span class="teams">{{ match.team1 }} vs {{ match.team2 }}</span>
+              <span class="status-badge" [class]="match.status">{{ match.status }}</span>
+            </div>
+            <div class="match-item-bottom">
+              <span class="venue-text">📍 {{ match.venue }}</span>
+              <div class="action-btns">
+                <button class="btn-live" (click)="updateStatus(match.id, 'live'); $event.stopPropagation()">🟢</button>
+                <button class="btn-end" (click)="updateStatus(match.id, 'completed'); $event.stopPropagation()">🔴</button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="matches.length === 0">
+            No matches yet. Create one above!
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-col" *ngIf="selectedMatch">
+
+      <!-- Score Panel -->
+      <div class="card score-panel">
+        <!-- <div class="card-header">
+          <h2>🏏 {{ selectedMatch.team1 }} vs {{ selectedMatch.team2 }}</h2>
+          <span class="status-badge" [class]="selectedMatch.status">{{ selectedMatch.status }}</span>
+        </div> -->
+        <div class="card-header">
+  <h2>🏏 {{ selectedMatch.team1 }} vs {{ selectedMatch.team2 }}</h2>
+  <div class="innings-info">
+    <span class="innings-badge">
+      {{ selectedMatch.current_innings == 1 ? '1st Innings' : '2nd Innings' }}
+    </span>
+    <span class="status-badge" [class]="selectedMatch.status">{{ selectedMatch.status }}</span>
+  </div>
+</div>
+        <div class="card-body">
+
+          <!-- Current Score Display -->
+          <div class="score-display">
+            <div class="score-big">
+              <span class="runs-big">{{ scoreData.runs }}</span>
+              <span class="sep">/</span>
+              <span class="wickets-big">{{ scoreData.wickets }}</span>
+            </div>
+            <div class="overs-big">{{ scoreData.overs }} overs</div>
+            <!-- Warning Banners -->
+            <div class="warning-banner" *ngIf="overCompleted">
+              ⚠️ Over completed! Select new bowler to continue!
+            </div>
+            <div class="warning-banner wicket-warning" *ngIf="wicketFell && !overCompleted">
+              🎯 Wicket fell! Select new batsman to continue!
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="quick-actions">
+            <button class="btn-ball btn-dot" (click)="recordAndUpdate(0, false, false, false, 'Dot ball')">•</button>
+            <button class="btn-ball btn-1" (click)="recordAndUpdate(1, false, false, false, '1 run')">1</button>
+            <button class="btn-ball btn-2" (click)="recordAndUpdate(2, false, false, false, '2 runs')">2</button>
+            <button class="btn-ball btn-3" (click)="recordAndUpdate(3, false, false, false, '3 runs')">3</button>
+            <button class="btn-ball btn-four" (click)="recordAndUpdate(4, false, true, false, 'FOUR! 🏏')">4</button>
+            <button class="btn-ball btn-six" (click)="recordAndUpdate(6, false, false, true, 'SIX! 🚀')">6</button>
+            <button class="btn-ball btn-wicket" (click)="recordAndUpdate(0, true, false, false, 'WICKET! 🎯')">W</button>
+          </div>
+
+          <!-- Manual Score Update -->
+          <div class="manual-section">
+            <h3>Manual Update</h3>
+            <div class="manual-grid">
+              <div class="input-group">
+                <label>Runs</label>
+                <input type="number" [(ngModel)]="scoreData.runs" />
+              </div>
+              <div class="input-group">
+                <label>Wickets</label>
+                <input type="number" [(ngModel)]="scoreData.wickets" />
+              </div>
+              <div class="input-group">
+                <label>Overs</label>
+                <input type="number" [(ngModel)]="scoreData.overs" step="0.1" />
+              </div>
+              <div class="input-group">
+                <label>Batting Team</label>
+                <input [(ngModel)]="scoreData.batting_team" />
+              </div>
+            </div>
+            <input [(ngModel)]="scoreData.last_action" placeholder="Last action description..." />
+            <button class="btn-update" (click)="submitScore()" [disabled]="loading">
+              {{ loading ? 'Broadcasting...' : '📡 Update & Broadcast' }}
+            </button>
+          </div>
+
+          <!-- First Innings Summary -->
+<div class="innings-summary" *ngIf="selectedMatch.current_innings == 2">
+  <h3>📊 1st Innings</h3>
+  <div class="innings-score">
+    {{ selectedMatch.first_innings_batting_team }}:
+    <strong>{{ selectedMatch.first_innings_score }}/{{ selectedMatch.first_innings_wickets }}</strong>
+    ({{ selectedMatch.first_innings_overs }} ov)
+  </div>
+  <div class="target-display">
+    🎯 Target: <strong>{{ selectedMatch.target }}</strong>
+  </div>
+</div>
+
+<!-- Switch Innings Button -->
+<div class="switch-innings-section" *ngIf="selectedMatch.current_innings == 1">
+  <button
+    class="btn-switch-innings"
+    (click)="confirmSwitchInnings()"
+    *ngIf="!showInningsSwitchConfirm">
+    🔄 End 1st Innings & Start 2nd
+  </button>
+
+  <!-- Confirm Switch -->
+  <div class="confirm-switch" *ngIf="showInningsSwitchConfirm">
+    <p>⚠️ Who bats in 2nd innings?</p>
+    <select [(ngModel)]="secondInningsBattingTeam">
+      <option [value]="selectedMatch.team1">{{ selectedMatch.team1 }}</option>
+      <option [value]="selectedMatch.team2">{{ selectedMatch.team2 }}</option>
+    </select>
+    <div class="confirm-btns">
+      <button class="btn-confirm" (click)="switchInnings()" [disabled]="loading">
+        ✅ Confirm Switch
+      </button>
+      <button class="btn-cancel" (click)="showInningsSwitchConfirm = false">
+        ❌ Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+        </div>
+      </div>
+
+      <!-- Ball by Ball -->
+      <!-- <div class="card" *ngIf="ballHistory.length > 0">
+        <div class="card-header">
+          <h2>⚡ Ball by Ball</h2>
+        </div>
+        <div class="card-body">
+          <div class="balls-container">
+            <div
+              class="ball-item"
+              *ngFor="let ball of ballHistory"
+              [class]="getBallClass(ball)">
+              {{ getBallLabel(ball) }}
+            </div>
+          </div>
+          <div class="ball-legend">
+            <span class="legend-item ball-four">4</span> Four
+            <span class="legend-item ball-six">6</span> Six
+            <span class="legend-item ball-wicket">W</span> Wicket
+            <span class="legend-item ball-normal">1</span> Runs
+          </div>
+        </div> -->
+        <!-- Ball by Ball -->
+        <div class="card" *ngIf="ballHistory && getOvers().length > 0">
+          <div class="card-header">
+            <h2>⚡ Ball by Ball</h2>
+          </div>
+          <div class="card-body">
+            <div class="over-row" *ngFor="let over of getOvers()">
+              <div class="over-info">
+                <span class="over-label">Ov {{ over.over }}</span>
+                <div class="balls-container">
+                  <div
+                    class="ball-item"
+                    *ngFor="let ball of over.balls"
+                    [class]="getBallClass(ball)">
+                    {{ getBallLabel(ball) }}
+                  </div>
+                </div>
+                <span class="over-total">{{ over.total }} runs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- No Match Selected -->
+    <div class="right-col no-select" *ngIf="!selectedMatch">
+      <div class="empty-select">
+        <div class="empty-icon">🏏</div>
+        <p>Select a match from the left to start scoring!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Scorecard -->
+<!-- <app-scorecard
+  *ngIf="selectedMatch"
+  [matchId]="selectedMatch.id"
+  [isAdmin]="true"
+  [match]="selectedMatch">
+</app-scorecard> -->
+<app-scorecard
+  #scorecardComp
+  *ngIf="selectedMatch"
+  [matchId]="selectedMatch.id"
+  [isAdmin]="true"
+  [match]="selectedMatch"
+  (bowlerChanged)="onBowlerChanged()"
+  (batsmanChanged)="onBatsmanChanged()">
+</app-scorecard>

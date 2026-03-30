@@ -1,0 +1,237 @@
+<div class="scorecard-container">
+
+  <!-- Toast -->
+  <div class="toast" *ngIf="message" [class]="messageType">{{ message }}</div>
+
+  <!-- Header -->
+  <div class="scorecard-header">
+    <h2>📊 Scorecard</h2>
+    <div class="header-actions" *ngIf="isAdmin">
+      <button class="btn-refresh" (click)="refresh()">🔄</button>
+      <button class="btn-add-player" (click)="showAddPlayer = !showAddPlayer">
+        {{ showAddPlayer ? '✕' : '➕ Player' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Player Form -->
+  <div class="add-player-form" *ngIf="showAddPlayer && isAdmin">
+    <h3>➕ Add Player</h3>
+    <div class="form-row">
+      <input [(ngModel)]="newPlayer.name" placeholder="Player Name" />
+      <select [(ngModel)]="newPlayer.team">
+        <option value="">Select Team</option>
+        <option [value]="match?.team1">{{ match?.team1 }}</option>
+        <option [value]="match?.team2">{{ match?.team2 }}</option>
+      </select>
+      <select [(ngModel)]="newPlayer.role">
+        <option value="batsman">Batsman</option>
+        <option value="bowler">Bowler</option>
+        <option value="allrounder">All Rounder</option>
+        <option value="wicketkeeper">Wicket Keeper</option>
+      </select>
+      <button class="btn-save" (click)="addPlayer()" [disabled]="loading">
+        {{ loading ? '...' : '✅ Add' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Players List (before innings starts) -->
+  <div class="players-list" *ngIf="isAdmin && players.length > 0 && !currentStriker">
+    <div class="team-section">
+      <h3>🏏 {{ match?.team1 }}</h3>
+      <div class="player-chips">
+        <span class="chip" *ngFor="let p of getTeam1Players()">
+          {{ p.name }} <small>{{ p.role }}</small>
+        </span>
+      </div>
+    </div>
+    <div class="team-section">
+      <h3>🏏 {{ match?.team2 }}</h3>
+      <div class="player-chips">
+        <span class="chip" *ngFor="let p of getTeam2Players()">
+          {{ p.name }} <small>{{ p.role }}</small>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Innings Button -->
+  <div class="start-innings-section"
+    *ngIf="isAdmin && players.length > 0 && !currentStriker && match?.status === 'live'">
+    <button class="btn-start-innings" (click)="showStartInnings = !showStartInnings">
+      {{ showStartInnings ? '✕ Cancel' : '🏏 Start Innings' }}
+    </button>
+
+    <div class="start-innings-form" *ngIf="showStartInnings">
+      <h3>Select Opening Players</h3>
+      <div class="select-group">
+        <label>🏏 Striker (Facing)</label>
+        <select [(ngModel)]="selectedStriker">
+          <option value="0">Select Striker</option>
+          <option *ngFor="let p of getBattingTeamPlayers()" [value]="p.id">
+            {{ p.name }}
+          </option>
+        </select>
+      </div>
+      <div class="select-group">
+        <label>🏏 Non-Striker</label>
+        <select [(ngModel)]="selectedNonStriker">
+          <option value="0">Select Non-Striker</option>
+          <option *ngFor="let p of getBattingTeamPlayers()" [value]="p.id">
+            {{ p.name }}
+          </option>
+        </select>
+      </div>
+      <div class="select-group">
+        <label>⚾ Opening Bowler</label>
+        <select [(ngModel)]="selectedBowler">
+          <option value="0">Select Bowler</option>
+          <option *ngFor="let p of getBowlingTeamPlayers()" [value]="p.id">
+            {{ p.name }}
+          </option>
+        </select>
+      </div>
+      <button class="btn-confirm-innings" (click)="startInnings()" [disabled]="loading">
+        {{ loading ? 'Starting...' : '✅ Start Innings' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Current Players Bar -->
+  <div class="current-players-bar" *ngIf="currentStriker">
+    <div class="current-player striker">
+      <span class="cp-label">🏏 Striker</span>
+      <span class="cp-name">{{ currentStriker?.name }}</span>
+    </div>
+    <div class="current-player nonstriker">
+      <span class="cp-label">🏏 Non-Striker</span>
+      <span class="cp-name">{{ currentNonStriker?.name }}</span>
+    </div>
+    <div class="current-player bowler">
+      <span class="cp-label">⚾ Bowling</span>
+      <span class="cp-name">{{ currentBowler?.name }}</span>
+    </div>
+  </div>
+
+  <!-- Admin Actions -->
+  <div class="admin-actions" *ngIf="isAdmin && currentStriker">
+
+    <!-- Wicket -->
+    <button class="btn-wicket-action" (click)="showWicketForm = !showWicketForm">
+      🎯 New Batsman
+    </button>
+
+    <!-- New Bowler -->
+    <button class="btn-bowler-action" (click)="showNewBowler = !showNewBowler">
+      ⚾ Change Bowler
+    </button>
+
+    <!-- Wicket Form -->
+    <div class="action-form" *ngIf="showWicketForm">
+      <h4>Select New Batsman</h4>
+      <select [(ngModel)]="newBatsmanId">
+        <option value="0">Select Batsman</option>
+        <option *ngFor="let p of getAvailableBatsmen()" [value]="p.id">
+          {{ p.name }}
+        </option>
+      </select>
+      <button class="btn-confirm" (click)="setNewBatsman()" [disabled]="loading">
+        ✅ Confirm
+      </button>
+    </div>
+
+    <!-- New Bowler Form -->
+    <div class="action-form" *ngIf="showNewBowler">
+      <h4>Select New Bowler</h4>
+      <select [(ngModel)]="newBowlerId">
+        <option value="0">Select Bowler</option>
+        <option *ngFor="let p of getBowlingTeamPlayers()" [value]="p.id">
+          {{ p.name }}
+        </option>
+      </select>
+      <button class="btn-confirm" (click)="setNewBowler()" [disabled]="loading">
+        ✅ Confirm
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" *ngIf="batting.length > 0 || bowling.length > 0">
+    <button class="tab" [class.active]="activeTab === 'batting'" (click)="activeTab = 'batting'">
+      🏏 Batting
+    </button>
+    <button class="tab" [class.active]="activeTab === 'bowling'" (click)="activeTab = 'bowling'">
+      ⚾ Bowling
+    </button>
+  </div>
+
+  <!-- Batting Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'batting'">
+    <div class="innings-section" *ngFor="let inn of [1, 2]">
+      <div *ngIf="getBattingByInnings(inn).length > 0">
+        <div class="innings-label">{{ inn === 1 ? '1st' : '2nd' }} Innings</div>
+        <div class="stats-table">
+          <div class="table-header">
+            <span class="col-player">Batsman</span>
+            <span class="col-stat">R</span>
+            <span class="col-stat">B</span>
+            <span class="col-stat">4s</span>
+            <span class="col-stat">6s</span>
+            <span class="col-stat">SR</span>
+          </div>
+          <div
+            class="table-row"
+            *ngFor="let stat of getBattingByInnings(inn)"
+            [class.batting]="stat.is_batting && stat.is_striker"
+            [class.nonstriker]="stat.is_batting && !stat.is_striker"
+            [class.out]="stat.is_out">
+            <span class="col-player">
+              <span class="player-name">{{ stat.player?.name }}</span>
+              <span class="striker-tag" *ngIf="stat.is_striker && stat.is_batting">⚡</span>
+              <span class="out-tag" *ngIf="stat.is_out">out</span>
+            </span>
+            <span class="col-stat runs-col">{{ stat.runs }}</span>
+            <span class="col-stat">{{ stat.balls }}</span>
+            <span class="col-stat">{{ stat.fours }}</span>
+            <span class="col-stat">{{ stat.sixes }}</span>
+            <span class="col-stat">{{ getStrikeRate(stat.runs, stat.balls) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bowling Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'bowling'">
+    <div class="innings-section" *ngFor="let inn of [1, 2]">
+      <div *ngIf="getBowlingByInnings(inn).length > 0">
+        <div class="innings-label">{{ inn === 1 ? '1st' : '2nd' }} Innings</div>
+        <div class="stats-table">
+          <div class="table-header">
+            <span class="col-player">Bowler</span>
+            <span class="col-stat">O</span>
+            <span class="col-stat">R</span>
+            <span class="col-stat">W</span>
+            <span class="col-stat">Eco</span>
+          </div>
+          <div
+            class="table-row"
+            *ngFor="let stat of getBowlingByInnings(inn)"
+            [class.bowling]="stat.is_bowling">
+            <span class="col-player">
+              <span class="player-name">{{ stat.player?.name }}</span>
+              <span class="bowling-tag" *ngIf="stat.is_bowling">🎯</span>
+            </span>
+            <span class="col-stat">{{ stat.overs }}</span>
+            <span class="col-stat">{{ stat.runs_given }}</span>
+            <span class="col-stat wickets-col">{{ stat.wickets }}</span>
+            <span class="col-stat">{{ getEconomy(stat.runs_given, stat.overs) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

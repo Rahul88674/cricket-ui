@@ -1,0 +1,63 @@
+<div class="login-container">
+
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <span class="logo-icon">🏏</span>
+      <h1>Cricket Live</h1>
+      <p>Admin Panel Login</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <!-- Form -->
+    <div class="login-form">
+      <div class="input-group">
+        <label>Email</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📧</span>
+          <input
+            type="email"
+            [(ngModel)]="credentials.email"
+            placeholder="admin@cricket.com"
+            (keyup.enter)="login()" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔑</span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="credentials.password"
+            placeholder="Enter password"
+            (keyup.enter)="login()" />
+          <span
+            class="toggle-password"
+            (click)="showPassword = !showPassword">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </span>
+        </div>
+      </div>
+
+      <button
+        class="login-btn"
+        (click)="login()"
+        [disabled]="loading">
+        {{ loading ? '⏳ Logging in...' : '🔐 Login' }}
+      </button>
+    </div>
+
+    <!-- User Panel Link -->
+    <div class="bottom-link">
+      <a href="/user">📺 Go to Live Score</a>
+    </div>
+
+  </div>
+
+</div>

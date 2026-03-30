@@ -1,0 +1,377 @@
+.scorecard-container {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #ffffff10;
+  margin-top: 20px;
+}
+
+.scorecard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.scorecard-header h2 { font-size: 1rem; color: #fff; }
+
+.header-actions { display: flex; gap: 8px; }
+
+.btn-refresh {
+  padding: 8px 12px;
+  background: #16213e;
+  color: #888;
+  border: 1px solid #ffffff15;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-add-player {
+  padding: 8px 14px;
+  background: #1b5e20;
+  color: #69f0ae;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.add-player-form {
+  background: #0f0f1a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #ffffff10;
+}
+
+.add-player-form h3 {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  min-width: 120px;
+  padding: 9px 12px;
+  background: #1a1a2e;
+  border: 1px solid #ffffff15;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.btn-save {
+  padding: 9px 16px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.players-list {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.team-section { flex: 1; min-width: 200px; }
+
+.team-section h3 {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.player-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 10px;
+  background: #0f0f1a;
+  border: 1px solid #ffffff10;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.chip small {
+  color: #888;
+  margin-left: 4px;
+}
+
+.start-innings-section { margin-bottom: 16px; }
+
+.btn-start-innings {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #1565C0, #0D47A1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.start-innings-form {
+  background: #0f0f1a;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #1565C0;
+}
+
+.start-innings-form h3 {
+  font-size: 0.9rem;
+  color: #64b5f6;
+  margin-bottom: 12px;
+}
+
+.select-group {
+  margin-bottom: 10px;
+}
+
+.select-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.select-group select,
+.action-form select {
+  width: 100%;
+  padding: 10px;
+  background: #1a1a2e;
+  border: 1px solid #ffffff15;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.btn-confirm-innings {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.current-players-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.current-player {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.current-player.striker    { background: #0d2010; border: 1px solid #4CAF5040; }
+.current-player.nonstriker { background: #0d1a10; border: 1px solid #4CAF5020; }
+.current-player.bowler     { background: #0d1525; border: 1px solid #1565C040; }
+
+.cp-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.cp-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn-wicket-action {
+  padding: 10px 16px;
+  background: #3a1a1a;
+  color: #ef9a9a;
+  border: 1px solid #ef9a9a30;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.btn-bowler-action {
+  padding: 10px 16px;
+  background: #1a2a3a;
+  color: #64b5f6;
+  border: 1px solid #64b5f630;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.action-form {
+  width: 100%;
+  background: #0f0f1a;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid #ffffff10;
+}
+
+.action-form h4 {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.btn-confirm {
+  width: 100%;
+  padding: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  background: #0f0f1a;
+  color: #888;
+  border: 1px solid #ffffff10;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.tab.active {
+  background: #16213e;
+  color: #fff;
+  border-color: #4CAF50;
+}
+
+.innings-section { margin-bottom: 20px; }
+
+.innings-label {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stats-table {
+  background: #0f0f1a;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #ffffff08;
+}
+
+.table-header {
+  display: flex;
+  padding: 10px 14px;
+  background: #16213e;
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.table-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid #ffffff08;
+  transition: background 0.2s;
+}
+
+.table-row:last-child { border-bottom: none; }
+.table-row.batting    { background: #0d2010; }
+.table-row.nonstriker { background: #0d1a10; }
+.table-row.out        { opacity: 0.5; }
+.table-row.bowling    { background: #0d1525; }
+
+.col-player {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.col-stat {
+  flex: 1;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.runs-col    { color: #69f0ae; font-weight: bold; }
+.wickets-col { color: #ef9a9a; font-weight: bold; }
+
+.player-name {
+  font-size: 0.9rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.striker-tag { font-size: 0.8rem; }
+.bowling-tag { font-size: 0.8rem; }
+
+.out-tag {
+  font-size: 0.7rem;
+  color: #ef9a9a;
+  background: #3a1a1a;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.toast {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.toast.success { background: #1b5e20; color: #a5d6a7; }
+.toast.error   { background: #b71c1c; color: #ffcdd2; }
+.toast.warning { background: #e65100; color: #ffe0b2; }

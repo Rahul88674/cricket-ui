@@ -11,7 +11,7 @@ export class CricketService {
   // private apiUrl = 'http://localhost:8000/api';
   private apiUrl = 'https://cricket-api-1tdp.onrender.com/api';
   // private socketUrl = 'http://localhost:3000';
-  private socketUrl = 'https://cricket-api-1tdp.onrender.com';
+  private socketUrl = 'https://cricket-socket-server.onrender.com';
   private socket: Socket;
 
   constructor(private http: HttpClient) {

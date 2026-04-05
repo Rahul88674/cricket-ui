@@ -817,3 +817,25 @@ h1 {
   background: #333;
   border-radius: 3px;
 }
+
+.target-bar {
+  background: linear-gradient(135deg, #1a2a0a, #0d2010);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border: 1px solid #4CAF5030;
+  text-align: center;
+}
+
+.target-text {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.target-text strong {
+  color: #ffd54f;
+  font-size: 1.1rem;
+}
+
+.need-runs  { color: #69f0ae !important; }
+.balls-left { color: #64b5f6 !important; }

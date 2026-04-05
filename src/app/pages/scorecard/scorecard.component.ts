@@ -72,17 +72,28 @@ export class ScorecardComponent implements OnInit, OnChanges {
     });
   }
 
+  // loadScorecard() {
+  //   this.cricketService.getScorecard(this.matchId).subscribe({
+  //     next: (data) => {
+  //       this.batting          = data.batting;
+  //       this.bowling          = data.bowling;
+  //       this.currentStriker   = data.current_striker;
+  //       this.currentNonStriker = data.current_nonstriker;
+  //       this.currentBowler    = data.current_bowler;
+  //     }
+  //   });
+  // }
   loadScorecard() {
-    this.cricketService.getScorecard(this.matchId).subscribe({
-      next: (data) => {
-        this.batting          = data.batting;
-        this.bowling          = data.bowling;
-        this.currentStriker   = data.current_striker;
-        this.currentNonStriker = data.current_nonstriker;
-        this.currentBowler    = data.current_bowler;
-      }
-    });
-  }
+  this.cricketService.getScorecard(this.matchId).subscribe({
+    next: (data) => {
+      this.batting           = data.batting;
+      this.bowling           = data.bowling;
+      this.currentStriker    = data.current_striker;
+      this.currentNonStriker = data.current_nonstriker;
+      this.currentBowler     = data.current_bowler;
+    }
+  });
+}
 
   addPlayer() {
     if (!this.newPlayer.name || !this.newPlayer.team) {
@@ -181,13 +192,38 @@ export class ScorecardComponent implements OnInit, OnChanges {
     return this.players.filter(p => p.team === this.match?.team2);
   }
 
+  // getBattingTeamPlayers() {
+  //   const battingTeam = this.match?.score?.batting_team;
+  //   return this.players.filter(p => p.team === battingTeam);
+  // }
+
+  // getBowlingTeamPlayers() {
+  //   const battingTeam = this.match?.score?.batting_team;
+  //   return this.players.filter(p =>
+  //     p.team !== battingTeam &&
+  //     (p.role === 'bowler' || p.role === 'allrounder')
+  //   );
+  // }
   getBattingTeamPlayers() {
-    const battingTeam = this.match?.score?.batting_team;
+    // Use score batting team first, fallback to innings logic
+    const battingTeam = this.match?.score?.batting_team
+      || (this.match?.current_innings === 2
+        ? (this.match?.first_innings_batting_team === this.match?.team1
+            ? this.match?.team2
+            : this.match?.team1)
+        : this.match?.team1);
+
     return this.players.filter(p => p.team === battingTeam);
   }
 
   getBowlingTeamPlayers() {
-    const battingTeam = this.match?.score?.batting_team;
+    const battingTeam = this.match?.score?.batting_team
+      || (this.match?.current_innings === 2
+        ? (this.match?.first_innings_batting_team === this.match?.team1
+            ? this.match?.team2
+            : this.match?.team1)
+        : this.match?.team1);
+
     return this.players.filter(p =>
       p.team !== battingTeam &&
       (p.role === 'bowler' || p.role === 'allrounder')
@@ -239,4 +275,5 @@ export class ScorecardComponent implements OnInit, OnChanges {
     this.loadPlayers();
     this.loadScorecard();
   }
+  
 }

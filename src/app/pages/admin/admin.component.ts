@@ -371,9 +371,24 @@ export class AdminComponent implements OnInit {
   ngOnInit() { this.loadMatches(); }
 
   loadMatches() {
-    this.cricketService.getMatches().subscribe({
-      next: (data) => { this.matches = data; },
-      error: () => { this.showMessage('❌ Error loading matches!', 'error'); }
+    // this.cricketService.getMatches().subscribe({
+    //   next: (data) => { this.matches = data; },
+    //   error: () => { this.showMessage('❌ Error loading matches!', 'error'); }
+    // });
+    this.cricketService.getMatch(this.selectedMatch.id).subscribe({
+      next: (freshMatch) => {
+        this.selectedMatch = freshMatch;
+        // Force scorecard to reload
+        setTimeout(() => {
+          if (this.scorecardRef) {
+            this.scorecardRef.currentStriker    = null;
+            this.scorecardRef.currentNonStriker = null;
+            this.scorecardRef.currentBowler     = null;
+            this.scorecardRef.showStartInnings  = false;
+            this.scorecardRef.refresh();
+          }
+        }, 500);
+      }
     });
   }
 
@@ -585,6 +600,24 @@ export class AdminComponent implements OnInit {
       this.selectedMatch.id,
       this.secondInningsBattingTeam
     ).subscribe({
+      // next: (data) => {
+      //   this.showMessage(
+      //     `🏏 2nd Innings! Target: ${data.target}`, 'success'
+      //   );
+      //   this.showInningsSwitchConfirm = false;
+      //   this.inningsCompleted         = false;
+      //   this.overCompleted            = false;
+      //   this.wicketFell               = false;
+      //   this.currentOver              = 0;
+      //   this.currentBall              = 0;
+      //   this.scoreData = {
+      //     runs: 0, wickets: 0, overs: 0.0,
+      //     batting_team: this.secondInningsBattingTeam,
+      //     last_action:  '2nd Innings started!'
+      //   };
+      //   this.loadMatches();
+      //   this.loading = false;
+      // },
       next: (data) => {
         this.showMessage(
           `🏏 2nd Innings! Target: ${data.target}`, 'success'
@@ -600,7 +633,16 @@ export class AdminComponent implements OnInit {
           batting_team: this.secondInningsBattingTeam,
           last_action:  '2nd Innings started!'
         };
+
+        // ✅ Refresh selected match with fresh data
         this.loadMatches();
+        this.cricketService.getMatch(this.selectedMatch.id).subscribe({
+          next: (freshMatch) => {
+            this.selectedMatch = freshMatch;
+            if (this.scorecardRef) this.scorecardRef.refresh();
+          }
+        });
+
         this.loading = false;
       },
       error: () => {

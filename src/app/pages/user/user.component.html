@@ -81,7 +81,7 @@
     </div>
 
     <!-- Target Bar (2nd innings) -->
-    <div class="target-bar" *ngIf="isSecondInnings()">
+    <!-- <div class="target-bar" *ngIf="isSecondInnings()">
       <div class="target-info">
         <span class="target-label">TARGET</span>
         <span class="target-num">{{ selectedMatch.target }}</span>
@@ -90,6 +90,14 @@
         <span class="target-label">NEED</span>
         <span class="target-num need">{{ getRunsNeeded() }}</span>
       </div>
+    </div> -->
+    <!-- Target Bar (2nd innings) -->
+    <div class="target-bar" *ngIf="isSecondInnings()">
+      <span class="target-text">
+        🎯 Target <strong>{{ selectedMatch.target }}</strong> &nbsp;|&nbsp;
+        Need <strong class="need-runs">{{ getRunsNeeded() }}</strong> runs
+        from <strong class="balls-left">{{ getBallsLeft() }}</strong> balls
+      </span>
     </div>
 
     <!-- Stats Grid -->

@@ -409,4 +409,14 @@ getOvers(): any[] {
   });
   return overs;
 }
+getBallsLeft(): number {
+  if (!this.selectedMatch || !this.liveScore) return 0;
+  const totalOvers    = this.selectedMatch.total_overs || 20;
+  const oversStr      = this.liveScore.overs.toString().split('.');
+  const completedOvers = parseInt(oversStr[0]) || 0;
+  const completedBalls = parseInt(oversStr[1]) || 0;
+  const ballsBowled    = (completedOvers * 6) + completedBalls;
+  const totalBalls     = totalOvers * 6;
+  return totalBalls - ballsBowled;
+}
 }

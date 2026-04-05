@@ -1,4 +1,4 @@
-// import { Component, OnInit } from '@angular/core';
+// import { Component, OnInit, ViewChild } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { FormsModule } from '@angular/forms';
 // import { Router } from '@angular/router';
@@ -8,48 +8,46 @@
 // @Component({
 //   selector: 'app-admin',
 //   standalone: true,
-//   // imports: [CommonModule, FormsModule],
 //   imports: [CommonModule, FormsModule, ScorecardComponent],
 //   templateUrl: './admin.component.html',
 //   styleUrls: ['./admin.component.css']
 // })
 // export class AdminComponent implements OnInit {
 
-//   matches: any[] = [];
-//   selectedMatch: any = null;
+//   matches: any[]      = [];
+//   selectedMatch: any  = null;
 
-//   newMatch = {
-//     team1: '',
-//     team2: '',
-//     venue: ''
-//   };
+//   newMatch = { team1: '', team2: '', venue: '' };
 
 //   scoreData = {
-//     runs: 0,
-//     wickets: 0,
-//     overs: 0.0,
-//     batting_team: '',
-//     last_action: ''
+//     runs: 0, wickets: 0, overs: 0.0,
+//     batting_team: '', last_action: ''
 //   };
 
-//   // Ball tracking
 //   currentOver = 0;
 //   currentBall = 0;
 //   ballHistory: any[] = [];
 
 //   // Innings
-//   showInningsSwitchConfirm = false;
-//   secondInningsBattingTeam = '';
+//   showInningsSwitchConfirm  = false;
+//   secondInningsBattingTeam  = '';
 
-//   message = '';
+//   // Over completed
+//   overCompleted     = false;
+
+//   // Wicket fell
+//   wicketFell        = false;
+
+//   message     = '';
 //   messageType = '';
-//   loading = false;
+//   loading     = false;
+
+//   // scorecardRef: any;
+//   @ViewChild('scorecardComp') scorecardRef: any;
 
 //   constructor(private cricketService: CricketService, private router: Router) {}
 
-//   ngOnInit() {
-//     this.loadMatches();
-//   }
+//   ngOnInit() { this.loadMatches(); }
 
 //   loadMatches() {
 //     this.cricketService.getMatches().subscribe({
@@ -66,7 +64,7 @@
 //     this.loading = true;
 //     this.cricketService.createMatch(this.newMatch).subscribe({
 //       next: () => {
-//         this.showMessage('✅ Match created successfully!', 'success');
+//         this.showMessage('✅ Match created!', 'success');
 //         this.newMatch = { team1: '', team2: '', venue: '' };
 //         this.loadMatches();
 //         this.loading = false;
@@ -79,35 +77,61 @@
 //   }
 
 //   selectMatch(match: any) {
-//     this.selectedMatch = match;
-//     this.scoreData.batting_team = match.team1;
+//     this.selectedMatch            = match;
+//     this.scoreData.batting_team   = match.team1;
 //     this.showInningsSwitchConfirm = false;
+//     this.overCompleted            = false;
+//     this.wicketFell               = false;
 
 //     if (match.score) {
-//       this.scoreData.runs        = match.score.runs;
-//       this.scoreData.wickets     = match.score.wickets;
-//       this.scoreData.overs       = match.score.overs;
+//       this.scoreData.runs         = match.score.runs;
+//       this.scoreData.wickets      = match.score.wickets;
+//       this.scoreData.overs        = match.score.overs;
 //       this.scoreData.batting_team = match.score.batting_team;
 
-//       const overStr = match.score.overs.toString();
-//       const parts   = overStr.split('.');
+//       const parts      = match.score.overs.toString().split('.');
 //       this.currentOver = parseInt(parts[0]) || 0;
 //       this.currentBall = parseInt(parts[1]) || 0;
 //     }
 
-//     // Set default 2nd innings batting team
 //     this.secondInningsBattingTeam = match.team2;
 //     this.loadBallHistory(match.id);
 //     this.message = '';
 //   }
 
+//   // loadBallHistory(matchId: number) {
+//   //   this.cricketService.getBallByBall(matchId).subscribe({
+//   //     next: (data) => { this.ballHistory = data; }
+//   //   });
+//   // }
+
 //   loadBallHistory(matchId: number) {
 //     this.cricketService.getBallByBall(matchId).subscribe({
-//       next: (data) => { this.ballHistory = data; }
+//       next: (data) => {
+//         this.ballHistory = data;
+//       }
 //     });
 //   }
 
-//   recordAndUpdate(runs: number, isWicket = false, isFour = false, isSix = false, actionText = '') {
+//   recordAndUpdate(
+//     runs: number,
+//     isWicket = false,
+//     isFour   = false,
+//     isSix    = false,
+//     actionText = ''
+//   ) {
+//     // Block if over completed and bowler not selected
+//     if (this.overCompleted) {
+//       this.showMessage('⚠️ Please select new bowler first!', 'warning');
+//       return;
+//     }
+
+//     // Block if wicket fell and new batsman not selected
+//     if (this.wicketFell) {
+//       this.showMessage('⚠️ Please select new batsman first!', 'warning');
+//       return;
+//     }
+
 //     this.currentBall++;
 
 //     if (this.currentBall > 6) {
@@ -147,10 +171,37 @@
 //     };
 
 //     this.cricketService.updateScore(this.selectedMatch.id, payload).subscribe({
-//       next: () => {
-//         this.showMessage('✅ Score updated & broadcasted!', 'success');
+//       next: (data) => {
+//         // Check if match completed
+//         if (data.match_completed) {
+//           this.showMessage('🏆 Match completed! ' + data.winner + ' won!', 'success');
+//           this.loadMatches();
+//           this.loading = false;
+//           return;
+//         }
+
+//         // Check if over completed
+//         if (data.over_completed) {
+//           this.overCompleted = true;
+//           this.showMessage('✅ Over completed! Select new bowler!', 'warning');
+//         } else {
+//           this.showMessage('✅ Score updated!', 'success');
+//         }
+
+//         // Check if wicket fell
+//         if (isWicket && this.scoreData.wickets < 10) {
+//           this.wicketFell = true;
+//           this.showMessage('🎯 Wicket! Select new batsman!', 'warning');
+//         }
+
 //         this.loadMatches();
 //         this.loadBallHistory(this.selectedMatch.id);
+
+//         // Refresh scorecard
+//         if (this.scorecardRef) {
+//           this.scorecardRef.refresh();
+//         }
+
 //         this.loading = false;
 //       },
 //       error: () => {
@@ -158,6 +209,18 @@
 //         this.loading = false;
 //       }
 //     });
+//   }
+
+//   onBowlerChanged() {
+//     this.overCompleted = false;
+//     this.showMessage('✅ New bowler set! Continue scoring!', 'success');
+//     if (this.scorecardRef) this.scorecardRef.refresh();
+//   }
+
+//   onBatsmanChanged() {
+//     this.wicketFell = false;
+//     this.showMessage('✅ New batsman set! Continue scoring!', 'success');
+//     if (this.scorecardRef) this.scorecardRef.refresh();
 //   }
 
 //   updateStatus(matchId: number, status: string) {
@@ -169,10 +232,7 @@
 //     });
 //   }
 
-//   // Switch Innings
-//   confirmSwitchInnings() {
-//     this.showInningsSwitchConfirm = true;
-//   }
+//   confirmSwitchInnings() { this.showInningsSwitchConfirm = true; }
 
 //   switchInnings() {
 //     if (!this.selectedMatch) return;
@@ -185,18 +245,15 @@
 //       next: (data) => {
 //         this.showMessage(`🏏 2nd Innings started! Target: ${data.target}`, 'success');
 //         this.showInningsSwitchConfirm = false;
-
-//         // Reset ball tracking
-//         this.currentOver = 0;
-//         this.currentBall = 0;
+//         this.overCompleted            = false;
+//         this.wicketFell               = false;
+//         this.currentOver              = 0;
+//         this.currentBall              = 0;
 //         this.scoreData = {
-//           runs:         0,
-//           wickets:      0,
-//           overs:        0.0,
+//           runs: 0, wickets: 0, overs: 0.0,
 //           batting_team: this.secondInningsBattingTeam,
 //           last_action:  '2nd Innings started!'
 //         };
-
 //         this.loadMatches();
 //         this.loading = false;
 //       },
@@ -211,20 +268,6 @@
 //     this.message     = msg;
 //     this.messageType = type;
 //     setTimeout(() => { this.message = ''; }, 4000);
-//   }
-
-//   getBallLabel(ball: any): string {
-//     if (ball.is_six)    return '6';
-//     if (ball.is_four)   return '4';
-//     if (ball.is_wicket) return 'W';
-//     return ball.runs_scored.toString();
-//   }
-
-//   getBallClass(ball: any): string {
-//     if (ball.is_wicket) return 'ball-wicket';
-//     if (ball.is_six)    return 'ball-six';
-//     if (ball.is_four)   return 'ball-four';
-//     return 'ball-normal';
 //   }
 
 //   getAdminName(): string {
@@ -244,6 +287,31 @@
 //       }
 //     });
 //   }
+
+//   getBallLabel(ball: any): string {
+//   if (ball.is_six)    return '6';
+//   if (ball.is_four)   return '4';
+//   if (ball.is_wicket) return 'W';
+//   return ball.runs_scored.toString();
+// }
+
+// getBallClass(ball: any): string {
+//   if (ball.is_wicket) return 'ball-wicket';
+//   if (ball.is_six)    return 'ball-six';
+//   if (ball.is_four)   return 'ball-four';
+//   return 'ball-normal';
+// }
+
+// getOvers(): any[] {
+//   if (!this.ballHistory) return [];
+//   const overs: any[] = [];
+//   Object.keys(this.ballHistory).forEach(overNum => {
+//     const balls = this.ballHistory[overNum as any];
+//     const total = balls.reduce((sum: number, b: any) => sum + b.runs_scored, 0);
+//     overs.push({ over: parseInt(overNum) + 1, balls, total });
+//   });
+//   return overs;
+// }
 // }
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -261,10 +329,17 @@ import { ScorecardComponent } from '../scorecard/scorecard.component';
 })
 export class AdminComponent implements OnInit {
 
-  matches: any[]      = [];
-  selectedMatch: any  = null;
+  matches: any[]     = [];
+  selectedMatch: any = null;
 
-  newMatch = { team1: '', team2: '', venue: '' };
+  newMatch = {
+    team1:       '',
+    team2:       '',
+    venue:       '',
+    total_overs: 20,
+    toss_winner: '',
+    toss_choice: 'bat'
+  };
 
   scoreData = {
     runs: 0, wickets: 0, overs: 0.0,
@@ -273,23 +348,22 @@ export class AdminComponent implements OnInit {
 
   currentOver = 0;
   currentBall = 0;
-  ballHistory: any[] = [];
+  ballHistory: any = {};
 
   // Innings
-  showInningsSwitchConfirm  = false;
-  secondInningsBattingTeam  = '';
+  showInningsSwitchConfirm = false;
+  secondInningsBattingTeam = '';
+  inningsCompleted         = false;
 
-  // Over completed
-  overCompleted     = false;
-
-  // Wicket fell
-  wicketFell        = false;
+  // Over + Wicket flags
+  overCompleted = false;
+  wicketFell    = false;
+  matchDone     = false;
 
   message     = '';
   messageType = '';
   loading     = false;
 
-  // scorecardRef: any;
   @ViewChild('scorecardComp') scorecardRef: any;
 
   constructor(private cricketService: CricketService, private router: Router) {}
@@ -304,15 +378,21 @@ export class AdminComponent implements OnInit {
   }
 
   createMatch() {
-    if (!this.newMatch.team1 || !this.newMatch.team2 || !this.newMatch.venue) {
+    if (!this.newMatch.team1 || !this.newMatch.team2 ||
+        !this.newMatch.venue || !this.newMatch.toss_winner) {
       this.showMessage('⚠️ Please fill all fields!', 'warning');
       return;
     }
     this.loading = true;
     this.cricketService.createMatch(this.newMatch).subscribe({
-      next: () => {
-        this.showMessage('✅ Match created!', 'success');
-        this.newMatch = { team1: '', team2: '', venue: '' };
+      next: (data) => {
+        this.showMessage(
+          `✅ Match created! ${data.batting_first} bats first!`, 'success'
+        );
+        this.newMatch = {
+          team1: '', team2: '', venue: '',
+          total_overs: 20, toss_winner: '', toss_choice: 'bat'
+        };
         this.loadMatches();
         this.loading = false;
       },
@@ -325,10 +405,11 @@ export class AdminComponent implements OnInit {
 
   selectMatch(match: any) {
     this.selectedMatch            = match;
-    this.scoreData.batting_team   = match.team1;
     this.showInningsSwitchConfirm = false;
     this.overCompleted            = false;
     this.wicketFell               = false;
+    this.inningsCompleted         = false;
+    this.matchDone                = match.status === 'completed';
 
     if (match.score) {
       this.scoreData.runs         = match.score.runs;
@@ -346,17 +427,9 @@ export class AdminComponent implements OnInit {
     this.message = '';
   }
 
-  // loadBallHistory(matchId: number) {
-  //   this.cricketService.getBallByBall(matchId).subscribe({
-  //     next: (data) => { this.ballHistory = data; }
-  //   });
-  // }
-
   loadBallHistory(matchId: number) {
     this.cricketService.getBallByBall(matchId).subscribe({
-      next: (data) => {
-        this.ballHistory = data;
-      }
+      next: (data) => { this.ballHistory = data; }
     });
   }
 
@@ -367,27 +440,30 @@ export class AdminComponent implements OnInit {
     isSix    = false,
     actionText = ''
   ) {
-    // Block if over completed and bowler not selected
-    if (this.overCompleted) {
-      this.showMessage('⚠️ Please select new bowler first!', 'warning');
+    if (this.matchDone) {
+      this.showMessage('🏆 Match is already completed!', 'error');
       return;
     }
-
-    // Block if wicket fell and new batsman not selected
+    if (this.overCompleted) {
+      this.showMessage('⚠️ Select new bowler first!', 'warning');
+      return;
+    }
     if (this.wicketFell) {
-      this.showMessage('⚠️ Please select new batsman first!', 'warning');
+      this.showMessage('⚠️ Select new batsman first!', 'warning');
+      return;
+    }
+    if (this.inningsCompleted) {
+      this.showMessage('⚠️ Please switch to 2nd innings!', 'warning');
       return;
     }
 
     this.currentBall++;
-
     if (this.currentBall > 6) {
       this.currentBall = 1;
       this.currentOver++;
     }
 
     this.scoreData.runs += runs;
-
     if (isWicket) {
       this.scoreData.wickets = Math.min(this.scoreData.wickets + 1, 10);
     }
@@ -419,23 +495,41 @@ export class AdminComponent implements OnInit {
 
     this.cricketService.updateScore(this.selectedMatch.id, payload).subscribe({
       next: (data) => {
-        // Check if match completed
+
+        // Match completed
         if (data.match_completed) {
-          this.showMessage('🏆 Match completed! ' + data.winner + ' won!', 'success');
+          this.matchDone = true;
+          this.showMessage('🏆 ' + data.winner + ' won the match!', 'success');
           this.loadMatches();
           this.loading = false;
           return;
         }
 
-        // Check if over completed
+        // Innings completed (all out or overs done)
+        if (data.innings_completed) {
+          this.inningsCompleted = true;
+          if (this.selectedMatch.current_innings == 1) {
+            this.showMessage(
+              '🏏 1st Innings done! Switch to 2nd innings!', 'warning'
+            );
+          } else {
+            this.matchDone = true;
+            this.showMessage('🏆 Match completed!', 'success');
+          }
+          this.loadMatches();
+          this.loading = false;
+          return;
+        }
+
+        // Over completed
         if (data.over_completed) {
           this.overCompleted = true;
-          this.showMessage('✅ Over completed! Select new bowler!', 'warning');
+          this.showMessage('✅ Over done! Select new bowler!', 'warning');
         } else {
           this.showMessage('✅ Score updated!', 'success');
         }
 
-        // Check if wicket fell
+        // Wicket fell
         if (isWicket && this.scoreData.wickets < 10) {
           this.wicketFell = true;
           this.showMessage('🎯 Wicket! Select new batsman!', 'warning');
@@ -443,16 +537,16 @@ export class AdminComponent implements OnInit {
 
         this.loadMatches();
         this.loadBallHistory(this.selectedMatch.id);
-
-        // Refresh scorecard
-        if (this.scorecardRef) {
-          this.scorecardRef.refresh();
-        }
-
+        if (this.scorecardRef) this.scorecardRef.refresh();
         this.loading = false;
       },
-      error: () => {
-        this.showMessage('❌ Error updating score!', 'error');
+      error: (err) => {
+        if (err.status === 400 && err.error?.blocked) {
+          this.matchDone = true;
+          this.showMessage('🏆 Match is already completed!', 'error');
+        } else {
+          this.showMessage('❌ Error updating score!', 'error');
+        }
         this.loading = false;
       }
     });
@@ -460,13 +554,13 @@ export class AdminComponent implements OnInit {
 
   onBowlerChanged() {
     this.overCompleted = false;
-    this.showMessage('✅ New bowler set! Continue scoring!', 'success');
+    this.showMessage('✅ New bowler set! Continue!', 'success');
     if (this.scorecardRef) this.scorecardRef.refresh();
   }
 
   onBatsmanChanged() {
     this.wicketFell = false;
-    this.showMessage('✅ New batsman set! Continue scoring!', 'success');
+    this.showMessage('✅ New batsman set! Continue!', 'success');
     if (this.scorecardRef) this.scorecardRef.refresh();
   }
 
@@ -479,7 +573,9 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  confirmSwitchInnings() { this.showInningsSwitchConfirm = true; }
+  confirmSwitchInnings() {
+    this.showInningsSwitchConfirm = true;
+  }
 
   switchInnings() {
     if (!this.selectedMatch) return;
@@ -490,8 +586,11 @@ export class AdminComponent implements OnInit {
       this.secondInningsBattingTeam
     ).subscribe({
       next: (data) => {
-        this.showMessage(`🏏 2nd Innings started! Target: ${data.target}`, 'success');
+        this.showMessage(
+          `🏏 2nd Innings! Target: ${data.target}`, 'success'
+        );
         this.showInningsSwitchConfirm = false;
+        this.inningsCompleted         = false;
         this.overCompleted            = false;
         this.wicketFell               = false;
         this.currentOver              = 0;
@@ -522,6 +621,33 @@ export class AdminComponent implements OnInit {
     return admin ? admin.name : 'Admin';
   }
 
+  getOvers(): any[] {
+    if (!this.ballHistory) return [];
+    const overs: any[] = [];
+    Object.keys(this.ballHistory).forEach(overNum => {
+      const balls = this.ballHistory[overNum as any];
+      const total = balls.reduce(
+        (sum: number, b: any) => sum + b.runs_scored, 0
+      );
+      overs.push({ over: parseInt(overNum) + 1, balls, total });
+    });
+    return overs;
+  }
+
+  getBallLabel(ball: any): string {
+    if (ball.is_six)    return '6';
+    if (ball.is_four)   return '4';
+    if (ball.is_wicket) return 'W';
+    return ball.runs_scored.toString();
+  }
+
+  getBallClass(ball: any): string {
+    if (ball.is_wicket) return 'ball-wicket';
+    if (ball.is_six)    return 'ball-six';
+    if (ball.is_four)   return 'ball-four';
+    return 'ball-normal';
+  }
+
   logout() {
     this.cricketService.logout().subscribe({
       next: () => {
@@ -534,29 +660,4 @@ export class AdminComponent implements OnInit {
       }
     });
   }
-
-  getBallLabel(ball: any): string {
-  if (ball.is_six)    return '6';
-  if (ball.is_four)   return '4';
-  if (ball.is_wicket) return 'W';
-  return ball.runs_scored.toString();
-}
-
-getBallClass(ball: any): string {
-  if (ball.is_wicket) return 'ball-wicket';
-  if (ball.is_six)    return 'ball-six';
-  if (ball.is_four)   return 'ball-four';
-  return 'ball-normal';
-}
-
-getOvers(): any[] {
-  if (!this.ballHistory) return [];
-  const overs: any[] = [];
-  Object.keys(this.ballHistory).forEach(overNum => {
-    const balls = this.ballHistory[overNum as any];
-    const total = balls.reduce((sum: number, b: any) => sum + b.runs_scored, 0);
-    overs.push({ over: parseInt(overNum) + 1, balls, total });
-  });
-  return overs;
-}
 }

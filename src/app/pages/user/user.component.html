@@ -205,7 +205,7 @@
 </div>
 
 <!-- Ball by Ball -->
-<div class="ball-card" *ngIf="ballHistory && ballHistory.length > 0">
+<!-- <div class="ball-card" *ngIf="ballHistory && ballHistory.length > 0">
   <div class="ball-card-header">
     <h3>⚡ Ball by Ball</h3>
   </div>
@@ -221,6 +221,26 @@
         </div>
       </div>
       <span class="over-total">{{ over.total }} runs</span>
+    </div>
+  </div>
+</div> -->
+<!-- Ball by Ball -->
+<div class="ball-card" *ngIf="ballHistory && getOvers().length > 0">
+  <div class="ball-card-header">
+    <h3>⚡ Ball by Ball</h3>
+  </div>
+  <div class="overs-list">
+    <div class="over-line" *ngFor="let over of getOvers()">
+      <span class="over-num-label">Ov {{ over.over }}</span>
+      <div class="balls-scroll">
+        <div
+          class="ball"
+          *ngFor="let ball of over.balls"
+          [class]="getBallClass(ball)">
+          {{ getBallLabel(ball) }}
+        </div>
+      </div>
+      <span class="over-run-total">{{ over.total }}r</span>
     </div>
   </div>
 </div>

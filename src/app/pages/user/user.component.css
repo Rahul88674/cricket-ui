@@ -769,3 +769,51 @@ h1 {
   font-weight: bold;
   z-index: 999;
 }
+
+.overs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.over-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.over-num-label {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: bold;
+  min-width: 32px;
+}
+
+.over-run-total {
+  font-size: 0.8rem;
+  color: #ffd54f;
+  font-weight: bold;
+  min-width: 28px;
+  text-align: right;
+}
+
+.balls-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 2px;
+}
+
+.balls-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+
+.balls-scroll::-webkit-scrollbar-track {
+  background: #0f0f1a;
+}
+
+.balls-scroll::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}

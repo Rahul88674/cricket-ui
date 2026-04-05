@@ -643,3 +643,123 @@ input::placeholder { color: #666; }
   font-weight: bold;
   min-width: 50px;
 }
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.toss-choice {
+  display: flex;
+  gap: 10px;
+}
+
+.toss-btn {
+  flex: 1;
+  padding: 10px;
+  background: #0f0f1a;
+  color: #888;
+  border: 1px solid #ffffff15;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.toss-btn.active {
+  background: #1b5e20;
+  color: #69f0ae;
+  border-color: #4CAF50;
+}
+
+.meta-pill {
+  padding: 3px 8px;
+  background: #ffffff10;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.meta-pill.toss {
+  background: #33280a;
+  color: #ffd54f;
+}
+
+.match-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.over-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.over-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.over-num {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: bold;
+  min-width: 35px;
+}
+
+.over-runs {
+  font-size: 0.8rem;
+  color: #ffd54f;
+  font-weight: bold;
+  min-width: 30px;
+  text-align: right;
+}
+
+.over-balls-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 2px;
+}
+
+.over-balls-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+
+.over-balls-scroll::-webkit-scrollbar-track {
+  background: #0f0f1a;
+}
+
+.over-balls-scroll::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+.innings-done-banner {
+  padding: 12px 16px;
+  background: #1a2a0a;
+  color: #69f0ae;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+  border: 1px solid #4CAF5030;
+}
+
+.match-done-banner {
+  padding: 14px;
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  color: #69f0ae;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.1rem;
+}

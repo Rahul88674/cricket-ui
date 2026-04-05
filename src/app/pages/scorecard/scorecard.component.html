@@ -58,7 +58,7 @@
 
   <!-- Start Innings Button -->
   <div class="start-innings-section"
-    *ngIf="isAdmin && players.length > 0 && !currentStriker && match?.status === 'live'">
+    *ngIf="isAdmin && players.length > 0 && !currentStriker">
     <button class="btn-start-innings" (click)="showStartInnings = !showStartInnings">
       {{ showStartInnings ? '✕ Cancel' : '🏏 Start Innings' }}
     </button>

@@ -370,27 +370,40 @@ export class AdminComponent implements OnInit {
 
   ngOnInit() { this.loadMatches(); }
 
+  // loadMatches() {
+  //   // this.cricketService.getMatches().subscribe({
+  //   //   next: (data) => { this.matches = data; },
+  //   //   error: () => { this.showMessage('❌ Error loading matches!', 'error'); }
+  //   // });
+  //   this.cricketService.getMatch(this.selectedMatch.id).subscribe({
+  //     next: (freshMatch) => {
+  //       this.selectedMatch = freshMatch;
+  //       // Force scorecard to reload
+  //       setTimeout(() => {
+  //         if (this.scorecardRef) {
+  //           this.scorecardRef.currentStriker    = null;
+  //           this.scorecardRef.currentNonStriker = null;
+  //           this.scorecardRef.currentBowler     = null;
+  //           this.scorecardRef.showStartInnings  = false;
+  //           this.scorecardRef.refresh();
+  //         }
+  //       }, 500);
+  //     }
+  //   });
+  // }
   loadMatches() {
-    // this.cricketService.getMatches().subscribe({
-    //   next: (data) => { this.matches = data; },
-    //   error: () => { this.showMessage('❌ Error loading matches!', 'error'); }
-    // });
-    this.cricketService.getMatch(this.selectedMatch.id).subscribe({
-      next: (freshMatch) => {
-        this.selectedMatch = freshMatch;
-        // Force scorecard to reload
-        setTimeout(() => {
-          if (this.scorecardRef) {
-            this.scorecardRef.currentStriker    = null;
-            this.scorecardRef.currentNonStriker = null;
-            this.scorecardRef.currentBowler     = null;
-            this.scorecardRef.showStartInnings  = false;
-            this.scorecardRef.refresh();
-          }
-        }, 500);
+  this.cricketService.getMatches().subscribe({
+    next: (data) => {
+      this.matches = data;
+      // Refresh selected match if exists
+      if (this.selectedMatch) {
+        const fresh = data.find((m: any) => m.id === this.selectedMatch.id);
+        if (fresh) this.selectedMatch = fresh;
       }
-    });
-  }
+    },
+    error: () => { this.showMessage('❌ Error loading matches!', 'error'); }
+  });
+}
 
   createMatch() {
     if (!this.newMatch.team1 || !this.newMatch.team2 ||

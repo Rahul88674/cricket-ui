@@ -14,9 +14,30 @@ export class CricketService {
   private socketUrl = 'https://cricket-socket-server.onrender.com';
   private socket: Socket;
 
+  // constructor(private http: HttpClient) {
+  //   this.socket = io(this.socketUrl);
+  // }
   constructor(private http: HttpClient) {
-    this.socket = io(this.socketUrl);
-  }
+  this.socket = io(this.socketUrl, {
+    transports: ['polling', 'websocket'], // polling first!
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 2000,
+    timeout: 20000,
+  });
+
+  this.socket.on('connect', () => {
+    console.log('✅ Socket connected:', this.socket.id);
+  });
+
+  this.socket.on('disconnect', () => {
+    console.log('❌ Socket disconnected - reconnecting...');
+  });
+
+  this.socket.on('connect_error', (err) => {
+    console.log('Socket error:', err.message);
+  });
+}
 
   // ========== AUTH ==========
 

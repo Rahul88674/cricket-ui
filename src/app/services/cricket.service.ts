@@ -1,43 +1,66 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { io, Socket } from 'socket.io-client';
+import Pusher from 'pusher-js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CricketService {
 
-  // private apiUrl = 'http://localhost:8000/api';
-  private apiUrl = 'https://cricket-api-1tdp.onrender.com/api';
-  // private socketUrl = 'http://localhost:3000';
-  private socketUrl = 'https://cricket-socket-server.onrender.com';
-  private socket: Socket;
+  private apiUrl     = 'https://cricket-api-1tdp.onrender.com/api';
+  private pusher: Pusher;
+  private channels: { [key: number]: any } = {};
 
-  // constructor(private http: HttpClient) {
-  //   this.socket = io(this.socketUrl);
-  // }
   constructor(private http: HttpClient) {
-  this.socket = io(this.socketUrl, {
-    transports: ['polling', 'websocket'], // polling first!
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 2000,
-    timeout: 20000,
-  });
+    // Initialize Pusher
+    this.pusher = new Pusher('1f060d893b86b7e16274', {
+      cluster: 'ap2'
+    });
+  }
 
-  this.socket.on('connect', () => {
-    console.log('✅ Socket connected:', this.socket.id);
-  });
+  // ========== PUSHER ==========
 
-  this.socket.on('disconnect', () => {
-    console.log('❌ Socket disconnected - reconnecting...');
-  });
+  joinMatch(matchId: number) {
+    if (!this.channels[matchId]) {
+      this.channels[matchId] = this.pusher.subscribe('match-' + matchId);
+      console.log('✅ Subscribed to match channel:', matchId);
+    }
+    return this.channels[matchId];
+  }
 
-  this.socket.on('connect_error', (err) => {
-    console.log('Socket error:', err.message);
-  });
-}
+  onScoreUpdate(): Observable<any> {
+    return new Observable(observer => {
+      this.pusher.bind_global((event: string, data: any) => {
+        if (event === 'score-updated') {
+          observer.next(data);
+        }
+      });
+    });
+  }
+
+  onConnect(): Observable<any> {
+    return new Observable(observer => {
+      this.pusher.connection.bind('connected', () => {
+        console.log('✅ Pusher connected!');
+        observer.next(true);
+      });
+      // If already connected
+      if (this.pusher.connection.state === 'connected') {
+        observer.next(true);
+      }
+    });
+  }
+
+  onInningsSwitch(): Observable<any> {
+    return new Observable(observer => {
+      this.pusher.bind_global((event: string, data: any) => {
+        if (event === 'innings-switched') {
+          observer.next(data);
+        }
+      });
+    });
+  }
 
   // ========== AUTH ==========
 
@@ -110,65 +133,35 @@ export class CricketService {
 
   // ========== PLAYER STATS ==========
 
-getPlayers(matchId: number): Observable<any> {
-  return this.http.get(`${this.apiUrl}/matches/${matchId}/players`);
-}
-
-addPlayer(matchId: number, data: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/matches/${matchId}/players`, data);
-}
-
-getScorecard(matchId: number): Observable<any> {
-  return this.http.get(`${this.apiUrl}/matches/${matchId}/scorecard`);
-}
-
-startInnings(matchId: number, data: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/matches/${matchId}/start-innings`, data);
-}
-
-setBowler(matchId: number, bowlerId: number): Observable<any> {
-  return this.http.post(`${this.apiUrl}/matches/${matchId}/set-bowler`, {
-    bowler_id: bowlerId
-  });
-}
-
-setNewBatsman(matchId: number, batsmanId: number): Observable<any> {
-  return this.http.post(`${this.apiUrl}/matches/${matchId}/set-batsman`, {
-    batsman_id: batsmanId
-  });
-}
-
-swapBatsmen(matchId: number): Observable<any> {
-  return this.http.post(`${this.apiUrl}/matches/${matchId}/swap-batsmen`, {});
-}
-
-  // ========== SOCKET CALLS ==========
-
-  joinMatch(matchId: number) {
-    this.socket.emit('joinMatch', matchId);
+  getPlayers(matchId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/matches/${matchId}/players`);
   }
 
-  onScoreUpdate(): Observable<any> {
-    return new Observable(observer => {
-      this.socket.on('scoreUpdated', (data) => {
-        observer.next(data);
-      });
+  addPlayer(matchId: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matches/${matchId}/players`, data);
+  }
+
+  getScorecard(matchId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/matches/${matchId}/scorecard`);
+  }
+
+  startInnings(matchId: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matches/${matchId}/start-innings`, data);
+  }
+
+  setBowler(matchId: number, bowlerId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matches/${matchId}/set-bowler`, {
+      bowler_id: bowlerId
     });
   }
 
-  onConnect(): Observable<any> {
-    return new Observable(observer => {
-      this.socket.on('connect', () => {
-        observer.next(this.socket.id);
-      });
+  setNewBatsman(matchId: number, batsmanId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matches/${matchId}/set-batsman`, {
+      batsman_id: batsmanId
     });
-  } 
-  
-  onInningsSwitch(): Observable<any> {
-    return new Observable(observer => {
-      this.socket.on('inningsSwitched', (data) => {
-        observer.next(data);
-      });
-    });
+  }
+
+  swapBatsmen(matchId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matches/${matchId}/swap-batsmen`, {});
   }
 }

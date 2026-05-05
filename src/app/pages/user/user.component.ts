@@ -228,9 +228,9 @@ export class UserComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadMatches();
 
-    this.cricketService.onConnect().subscribe(() => {
-      this.isConnected = true;
-    });
+    // this.cricketService.onConnect().subscribe(() => {
+    //   this.isConnected = true;
+    // });
 
     // Listen for score updates
     // this.scoreSubscription = this.cricketService.onScoreUpdate().subscribe((data) => {
@@ -282,6 +282,12 @@ export class UserComponent implements OnInit, OnDestroy {
       };
       this.lastUpdated = new Date().toLocaleTimeString();
     });
+
+    // Pusher connection status
+  this.cricketService.onConnect().subscribe(() => {
+    this.isConnected = true;
+    console.log('✅ Pusher connected!');
+  });
   }
 
   loadMatches() {
@@ -314,12 +320,38 @@ export class UserComponent implements OnInit, OnDestroy {
   //   this.loadBallHistory(match.id);
   // }
   selectMatch(match: any) {
-    this.selectedMatch = match;
-    this.liveScore     = match.score;
-    this.cricketService.joinMatch(match.id);
+  this.selectedMatch = match;
+  this.liveScore     = match.score;
+
+  // Subscribe to Pusher channel for this match
+  const channel = this.cricketService.joinMatch(match.id);
+
+  // Listen for score updates on this specific channel
+  channel.bind('score-updated', (data: any) => {
+    this.triggerScoreAnimation();
+    this.liveScore   = data;
+    this.lastUpdated = new Date().toLocaleTimeString();
+
+    if (data.current_striker)    this.currentStriker    = data.current_striker;
+    if (data.current_nonstriker) this.currentNonStriker = data.current_nonstriker;
+    if (data.current_bowler)     this.currentBowler     = data.current_bowler;
+
+    if (data.match_status === 'completed') {
+      this.matchWinner = data.batting_team;
+    }
+
+    if (data.over_completed) {
+      this.overJustCompleted = true;
+      setTimeout(() => { this.overJustCompleted = false; }, 5000);
+    }
+
     this.loadBallHistory(match.id);
-    this.loadCurrentPlayers(match.id);
-  }
+    this.refreshMatch(match.id);
+  });
+
+  this.loadBallHistory(match.id);
+  this.loadCurrentPlayers(match.id);
+}
 
 loadCurrentPlayers(matchId: number) {
   this.cricketService.getScorecard(matchId).subscribe({
@@ -385,8 +417,10 @@ loadCurrentPlayers(matchId: number) {
   }
 
   ngOnDestroy() {
-    if (this.scoreSubscription)   this.scoreSubscription.unsubscribe();
-    if (this.inningsSubscription) this.inningsSubscription.unsubscribe();
+    // if (this.scoreSubscription)   this.scoreSubscription.unsubscribe();
+    // if (this.inningsSubscription) this.inningsSubscription.unsubscribe();
+     if (this.scoreSubscription)   this.scoreSubscription.unsubscribe();
+  if (this.inningsSubscription) this.inningsSubscription.unsubscribe();
   }
 
   getStrikeRate(runs: number, balls: number): string {
